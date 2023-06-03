@@ -1,0 +1,106 @@
+#### terraform.tf ####
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+# Run this backend only after creating S3 statebucket
+terraform {
+  backend "s3" {
+    bucket = "batch3-prac-rjthapaastatebucket"
+    key    = "terraformtfstate"
+    region = "us-east-1"
+    dynamodb_table = "batch3-prac-rjthapaadynamo"
+  }
+}
+
+#### Providers.tf ####
+provider "aws" {
+  region = "us-east-1"
+}
+
+#### Ec2.tf ####
+
+resource "aws_instance" "web" {
+  count         = 1
+  ami           = var.ami
+  instance_type = var.instance_type
+
+  tags = {
+    Name = var.instance_name
+  }
+}
+
+#### S3.tf ####
+resource "aws_s3_bucket" "example" {
+  bucket = var.bucket_name
+
+  tags = {
+    Name        = var.bucket_name
+  }
+}
+
+resource "aws_s3_bucket" "example" {
+  bucket = var.bucket_statename
+
+  tags = {
+    Name        = var.bucket_statename
+  }
+}
+
+#### Dynamodb.tf ####
+resource "aws_dynamodb_table" "basic-dynamodb-table" {
+  name           = var.dy_name
+  billing_mode   = "PAY PER REQUEST"
+  hash_key       = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+  tags = {
+    name = var.dy_name
+  }
+
+#### varibale.tf ####
+variable "ami" {
+    default = "ami-0261755bbcb8c4a84"
+}
+
+variable "instance_type" {
+    default = "t2.micro"
+}
+
+variable "instance_name" {
+    default = "batch3-prac-rjthapaa"
+}
+
+variable "bucket_name" {
+    default = "batch3-prac-rjthapaabucket"
+}
+
+variable "bucket_statename" {
+    default = "batch3-prac-rjthapaastatebucket"
+}
+
+variable "dy_name" {
+    default = "batch3-prac-rjthapaadynamo"
+}
+
+
+### Terraform commands ###
+terraform init
+terraform plan
+terraform fmt
+terraform validate
+terraform apply --auto-apply
+terrafrom destroy --auto-apply
+
+sudo apt install awscli
+aws configure
+provide the the user accesskey and secret key to provide the AWS console permissions for the create ec2 or any s3 buckets thru terraform
+
